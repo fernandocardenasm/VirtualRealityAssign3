@@ -468,8 +468,18 @@ class GoGo(ManipulationTechnique):
 	
 		## ToDo: init behavior here
 		# ...
-
-		pass
+		#_eye_hand_offset = abs(self.HEAD_NODE) - abs(pointer_node)
+		#print(self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value)
+		#Get the distance from the screen to the Head 
+		#print(self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value.get_translate()[2])
+		position_head = self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value.get_translate()[2]
+		#print(self.pointer_node.WorldTransform.value) #col=3|row=2 (starting from 0)
+		#Get the distance from the screen to the Head 
+		#print(self.pointer_node.WorldTransform.value.get_translate()[2])
+		position_pointer = self.pointer_node.WorldTransform.value.get_translate()[2]
+		_eye_hand_offset = abs(position_head - position_pointer)
+		print(_eye_hand_offset)
+		print("\n")
 
 
 	### functions ###
