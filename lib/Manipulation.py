@@ -422,7 +422,7 @@ class GoGo(ManipulationTechnique):
 
 
 		### further parameters ###  
-		self.ray_length = 0.2 # in meter
+		self.ray_length = 0.095 # in meter
 		self.intersection_point_size = 0.01 # in meter
 
 		self.gogo_threshold = 0.35 # in meter
@@ -467,7 +467,7 @@ class GoGo(ManipulationTechnique):
 ######################### intersection...
 		if self.enable_flag == True:    
 			## calc intersection
-			_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.tool_node.WorldTransform.value, PICK_LENGTH = self.ray_length)
+			_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.hand_geometry.WorldTransform.value, PICK_LENGTH = self.ray_length)
 
 			if len(_mf_pick_result.value) > 0: # intersection found
 				self.first_pick_result = _mf_pick_result.value[0] # get first pick result
