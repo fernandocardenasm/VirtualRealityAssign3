@@ -357,7 +357,7 @@ class VirtualHand(ManipulationTechnique):
 
 
 		### further parameters ###  
-		self.ray_length = 0.2 # in meter
+		self.ray_length = 0.095 # in meter
 		#self.intersection_point_size = 0.01 # in meter
 
 
@@ -381,7 +381,7 @@ class VirtualHand(ManipulationTechnique):
 		# # ...
 		if self.enable_flag == True:    
 			## calc intersection
-			_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.tool_node.WorldTransform.value, PICK_LENGTH = self.ray_length)
+			_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.hand_geometry.WorldTransform.value, PICK_LENGTH = self.ray_length)
 			#print(len(_mf_pick_result.value))
 
 			if len(_mf_pick_result.value) > 0: # intersection found
@@ -459,9 +459,10 @@ class GoGo(ManipulationTechnique):
 		_eye_hand_offset = abs(position_head) - abs(position_pointer) #negative value: pointer is behind glasses (or loss of proper tracking??)
 		#print(_eye_hand_offset)
 		#print("\n")
+
+
 		if _eye_hand_offset > self.gogo_threshold: #is hand in outer arm range?
 			self.gogo_behavior(_eye_hand_offset) # perform non-isomorphic GoGo-behaviour
-
 		
 ######################### intersection...
 		if self.enable_flag == True:    
@@ -499,8 +500,7 @@ class GoGo(ManipulationTechnique):
 
 		###  IS THIS NEEDED??? -> what does it do?
 			# evtl. drag object
-			#ManipulationTechnique.dragging(self) 
-
+			ManipulationTechnique.dragging(self) 
 
 	### functions ###
 	def gogo_behavior(self, _eye_hand_offset):
@@ -509,9 +509,6 @@ class GoGo(ManipulationTechnique):
 
 		# apply transformation
 	#??? APPLY JUST ON DEPTH-VALUE or on whole ???
-		#_point = self.first_pick_result.WorldPosition.value
-		#_distance = (self.tool_node.WorldTransform.value.get_translate() - _point).length()
-
 		# pass
 		#_new_mat = self.sf_mat.value * avango.gua.make_trans_mat(_x, _y, _z)
 
@@ -521,7 +518,7 @@ class GoGo(ManipulationTechnique):
 
     	#Function to use
     	#(0.3)*x^2
-
+    	#self.hand_transform_node.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, _z)
     	#_x *= length_new_mat *25
     	#_y *= length_new_mat *25
     	#_z *= length_new_mat *25
@@ -533,6 +530,8 @@ class GoGo(ManipulationTechnique):
 
     	#One of those must be updated
 		# self.tool_nood.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, _distance * -0.5) * \
+		_z = (-8) * pow(_eye_hand_offset - self.gogo_threshold,2)
+		self.tool_node.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, _z)
 		#self.hand_transform_node.Transform.value
 
 		#Do we need to modify the drag function
@@ -541,7 +540,7 @@ class GoGo(ManipulationTechnique):
 		# self.dragged_node = NODE.Parent.value # take the group node of the geomtry node
 		# self.dragging_offset_mat = avango.gua.make_inverse_mat(self.tool_node.WorldTransform.value) * self.dragged_node.Transform.value # object transformation in pointer coordinate system
 
-  
+  		
 		# def stop_dragging(self): 
 		# 	self.dragged_node = None
 		# 	self.dragging_offset_mat = avango.gua.make_identity_mat()
