@@ -60,7 +60,7 @@ def start():
 
 
     
-    if hostname == "boreas": # Mitsubishi 3D-TV workstation
+    if hostname == "eris": # Mitsubishi 3D-TV workstation
         viewingSetup = ViewingSetup( SCENEGRAPH = scenegraph
                                    , SCREEN_RESOLUTION = avango.gua.Vec2ui(1920, 1080) # in pixels
                                    , SCREEN_DIMENSIONS = avango.gua.Vec2(1.445, 0.81) # in meter

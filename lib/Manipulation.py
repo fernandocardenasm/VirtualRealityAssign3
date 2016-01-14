@@ -504,7 +504,7 @@ class GoGo(ManipulationTechnique):
 
 	### functions ###
 	def gogo_behavior(self, _eye_hand_offset):
-		print("here comes gogo:")
+		#print("here comes gogo:")
 		# compute transfer function
 
 		# apply transformation
@@ -569,16 +569,36 @@ class Homer(ManipulationTechnique):
 		### further parameters ###  
 		self.ray_length = 2.0 # in meter
 		self.ray_thickness = 0.005 # in meter
-
+		self.ray_hand_length = 0.095 # in meter
 		self.intersection_point_size = 0.01 # in meter
 
 
 		self.mode = 0 # 0 = ray-mode; 1 = hand-mode
 
 		### further resources ###
+		_loader = avango.gua.nodes.TriMeshLoader()
 		
 		## ToDo: init ray and hand nodes here
-		# ...
+		self.ray_geometry = _loader.create_geometry_from_file("ray_geometry", "data/objects/cylinder.obj", avango.gua.LoaderFlags.DEFAULTS)
+		self.ray_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,self.ray_length * -0.5) * \
+											avango.gua.make_rot_mat(-90.0,1,0,0) * \
+											avango.gua.make_scale_mat(self.ray_thickness, self.ray_length, self.ray_thickness)
+		self.ray_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
+		self.tool_node.Children.value.append(self.ray_geometry)
+
+		self.intersection_geometry = _loader.create_geometry_from_file("intersection_geometry", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
+		self.intersection_geometry.Tags.value = ["invisible"] # set geometry invisible
+		self.intersection_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
+		self.tool_node.Children.value.append(self.intersection_geometry)
+		
+		## ToDo: init hand nodes here
+		self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
+		self.hand_geometry.Tags.value = ["invisible"] # set geometry invisible
+		self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,self.ray_hand_length * -0.5) #* \
+											 #avango.gua.make_scale_mat(self.ray_length/2, self.ray_length/2, self.ray_length/2)
+		self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
+		#self.tool_node.Children.value.append(self.hand_geometry)
+		self.tool_node.Children.value.append(self.hand_geometry)
 
 
 
@@ -616,19 +636,74 @@ class Homer(ManipulationTechnique):
 	def ray_mode(self):
 
 		## ToDo: init ray submode behavior here
-		# ...
+		if self.enable_flag == True:    
+			## calc intersection
+			_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.tool_node.WorldTransform.value, PICK_LENGTH = self.ray_length)
+			#print(len(_mf_pick_result.value))
+			self.ray_geometry.Tags.value = []
+			self.hand_geometry.Tags.value = ["invisible"]
+			if len(_mf_pick_result.value) > 0: # intersection found
+				self.first_pick_result = _mf_pick_result.value[0] # get first pick result
+			
+			else: # no intersection found
+				self.first_pick_result = None
+  
+ 
+			if self.first_pick_result is not None:
+				#print("Grab 1")
+				_point = self.first_pick_result.WorldPosition.value
+				_distance = (self.tool_node.WorldTransform.value.get_translate() - _point).length()
+				
+				## update ray length visualization
+				self.ray_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, _distance * -0.5) * \
+													avango.gua.make_rot_mat(-90.0, 1, 0, 0) * \
+													avango.gua.make_scale_mat(self.ray_thickness, _distance, self.ray_thickness)
+  
 
-		pass
+				## update intersection point visualization
+				self.intersection_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,-_distance) * \
+															 avango.gua.make_scale_mat(self.intersection_point_size)
+																  
+				self.intersection_geometry.Tags.value = [] # set visible
+
+			else: 
+				## set to default ray length visualization
+				self.ray_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, self.ray_length * -0.5) * \
+													avango.gua.make_rot_mat(-90.0, 1, 0, 0) * \
+													avango.gua.make_scale_mat(self.ray_thickness, self.ray_length, self.ray_thickness)
+
+				## update intersection point visualization
+				self.intersection_geometry.Tags.value = ["invisible"] # set invisible
 	
 
 	def hand_mode(self):    
+		# ToDo: init hand submode behavior here
+		self.hand_geometry.Tags.value = [] # set visible
+		_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.tool_node.WorldTransform.value, PICK_LENGTH = self.ray_length)
 
-		## ToDo: init hand submode behavior here
-		# ...
+		if len(_mf_pick_result.value) > 0: # intersection found
+		 	self.first_pick_result = _mf_pick_result.value[0] # get first pick result
+		else: # no intersection found
+		 	self.first_pick_result = None
 
-		pass
-	  
-	
+		if self.first_pick_result is not None:
+		 	_point = self.first_pick_result.WorldPosition.value
+		 	_distance = (self.tool_node.WorldTransform.value.get_translate() - _point).length()
+				
+				## update ray length visualization
+		 	self.ray_geometry.Tags.value = ["invisible"]
+		 	self.intersection_geometry.Tags.value = ["invisible"] # set invisible
+		# 		## update intersection point visualization
+		 	self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,-_distance + self.ray_hand_length/2)
+		 	self.hand_geometry.Tags.value = [] # set visible
+		else: 
+		### set to default ray length visualization
+		 	# self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, self.ray_length * -0.5) * \
+		 	# 									avango.gua.make_rot_mat(-90.0, 1, 0, 0) * \
+		 	# 									avango.gua.make_scale_mat(self.ray_thickness, self.ray_length, self.ray_thickness)
+		# 		## update intersection point visualization
+			self.hand_geometry.Tags.value = [] # set visible
+			self.intersection_geometry.Tags.value = ["invisible"] # set invisible
 
 	def calc_offset(self):  
 
@@ -644,7 +719,7 @@ class Homer(ManipulationTechnique):
 		self.set_homer_mode(1) # switch to hand submode
 
 		ManipulationTechnique.start_dragging(self, NODE) # call base class function
-
+		#print("start dragging")
 		# ToDo: evtl. override dragging offset here
 		# ...
 		
@@ -664,5 +739,6 @@ class Homer(ManipulationTechnique):
 
 		if self.enable_flag == True: 
 			self.set_homer_mode(0) # switch to ray submode
+			#print("enable")
 
 
