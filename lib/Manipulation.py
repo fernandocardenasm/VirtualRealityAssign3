@@ -571,7 +571,8 @@ class Homer(ManipulationTechnique):
 		self.ray_thickness = 0.005 # in meter
 		self.ray_hand_length = 0.095 # in meter
 		self.intersection_point_size = 0.01 # in meter
-
+		self.init_eye_hand_offset = 0
+		self.init_headset = 0
 
 		self.mode = 0 # 0 = ray-mode; 1 = hand-mode
 
@@ -700,6 +701,23 @@ class Homer(ManipulationTechnique):
 		# 		## update intersection point visualization
 		 	self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,-_distance + self.ray_hand_length/2)
 		 	self.hand_geometry.Tags.value = [] # set visible
+
+		 	#Implementation
+		 	#position_head = self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value.get_translate()[2] #depth-value glasses
+			#position_pointer = self.pointer_node.WorldTransform.value.get_translate()[2] #depth-value pointer
+
+			#First distance option
+		 	#position_head = abs(self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value.get_translate()[2])
+
+		 	#Second option
+		 	position_head = self.init_headset
+
+		 	_current = self.calc_offset()
+
+		 	new_distance = (position_head * (_current/self.init_eye_hand_offset)) - position_head
+		 	print(new_distance)
+		 	#_z = (-8) * pow(_eye_hand_offset - self.init_eye_hand_offset,2)
+		 	self.tool_node.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, -new_distance)
 		else:
 			pass 
 		### set to default ray length visualization
@@ -715,12 +733,15 @@ class Homer(ManipulationTechnique):
 		## ToDo: evtl. calc necessary offsets and parameters here for switch between ray and hand mode
 		# ...
 
-		pass
+		position_head = self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value.get_translate()[2] #depth-value glasses
+		position_pointer = self.pointer_node.WorldTransform.value.get_translate()[2] #depth-value pointer
+		return abs(position_head) - abs(position_pointer) #negative value: pointer is behind glasses (or loss of proper tracking??)
 		  
 	
 	## extend respective base-class function
 	def start_dragging(self, NODE):
-		self.calc_offset()
+		self.init_eye_hand_offset = self.calc_offset()
+		self.init_headset = abs(self.MANIPULATION_MANAGER.HEAD_NODE.WorldTransform.value.get_translate()[2])
 		self.set_homer_mode(1) # switch to hand submode
 
 		ManipulationTechnique.start_dragging(self, NODE) # call base class function
