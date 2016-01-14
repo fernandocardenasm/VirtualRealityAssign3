@@ -587,16 +587,16 @@ class Homer(ManipulationTechnique):
 		self.tool_node.Children.value.append(self.ray_geometry)
 
 		self.intersection_geometry = _loader.create_geometry_from_file("intersection_geometry", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
-		self.intersection_geometry.Tags.value = ["invisible"] # set geometry invisible
+		#self.intersection_geometry.Tags.value = ["invisible"] # set geometry invisible
 		self.intersection_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
 		self.tool_node.Children.value.append(self.intersection_geometry)
 		
 		## ToDo: init hand nodes here
 		self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
-		self.hand_geometry.Tags.value = ["invisible"] # set geometry invisible
+		#self.hand_geometry.Tags.value = ["invisible"] # set geometry invisible
 		self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,self.ray_hand_length * -0.5) #* \
 											 #avango.gua.make_scale_mat(self.ray_length/2, self.ray_length/2, self.ray_length/2)
-		self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
+		self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,1.0,0.0,1.0))
 		#self.tool_node.Children.value.append(self.hand_geometry)
 		self.tool_node.Children.value.append(self.hand_geometry)
 
@@ -628,9 +628,14 @@ class Homer(ManipulationTechnique):
 		
 		if self.mode == 0: # ray submode
 			pass
+			self.intersection_geometry.Tags.value = [] # set invisible
+			self.ray_geometry.Tags.value = []
+			self.hand_geometry.Tags.value = ["invisible"]
 		
 		elif self.mode == 1: # hand submode
-			pass
+			self.hand_geometry.Tags.value = []
+			self.ray_geometry.Tags.value = ["invisible"]
+			self.intersection_geometry.Tags.value = ["invisible"] # set invisible
 
 	
 	def ray_mode(self):
@@ -640,8 +645,7 @@ class Homer(ManipulationTechnique):
 			## calc intersection
 			_mf_pick_result = self.MANIPULATION_MANAGER.intersection.calc_pick_result(PICK_MAT = self.tool_node.WorldTransform.value, PICK_LENGTH = self.ray_length)
 			#print(len(_mf_pick_result.value))
-			self.ray_geometry.Tags.value = []
-			self.hand_geometry.Tags.value = ["invisible"]
+			
 			if len(_mf_pick_result.value) > 0: # intersection found
 				self.first_pick_result = _mf_pick_result.value[0] # get first pick result
 			
@@ -664,7 +668,7 @@ class Homer(ManipulationTechnique):
 				self.intersection_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,-_distance) * \
 															 avango.gua.make_scale_mat(self.intersection_point_size)
 																  
-				self.intersection_geometry.Tags.value = [] # set visible
+				#self.intersection_geometry.Tags.value = [] # set visible
 
 			else: 
 				## set to default ray length visualization
@@ -673,7 +677,7 @@ class Homer(ManipulationTechnique):
 													avango.gua.make_scale_mat(self.ray_thickness, self.ray_length, self.ray_thickness)
 
 				## update intersection point visualization
-				self.intersection_geometry.Tags.value = ["invisible"] # set invisible
+				
 	
 
 	def hand_mode(self):    
@@ -691,19 +695,20 @@ class Homer(ManipulationTechnique):
 		 	_distance = (self.tool_node.WorldTransform.value.get_translate() - _point).length()
 				
 				## update ray length visualization
-		 	self.ray_geometry.Tags.value = ["invisible"]
-		 	self.intersection_geometry.Tags.value = ["invisible"] # set invisible
+		 	#self.ray_geometry.Tags.value = ["invisible"]
+		 	#self.intersection_geometry.Tags.value = ["invisible"] # set invisible
 		# 		## update intersection point visualization
 		 	self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,-_distance + self.ray_hand_length/2)
 		 	self.hand_geometry.Tags.value = [] # set visible
-		else: 
+		else:
+			pass 
 		### set to default ray length visualization
 		 	# self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, self.ray_length * -0.5) * \
 		 	# 									avango.gua.make_rot_mat(-90.0, 1, 0, 0) * \
 		 	# 									avango.gua.make_scale_mat(self.ray_thickness, self.ray_length, self.ray_thickness)
 		# 		## update intersection point visualization
-			self.hand_geometry.Tags.value = [] # set visible
-			self.intersection_geometry.Tags.value = ["invisible"] # set invisible
+			#self.hand_geometry.Tags.value = [] # set visible
+			#self.intersection_geometry.Tags.value = ["invisible"] # set invisible
 
 	def calc_offset(self):  
 
