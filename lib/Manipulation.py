@@ -628,7 +628,7 @@ class Homer(ManipulationTechnique):
 		
 		if self.mode == 0: # ray submode
 			pass
-			self.intersection_geometry.Tags.value = [] # set invisible
+			#self.intersection_geometry.Tags.value = [] # set visible
 			self.ray_geometry.Tags.value = []
 			self.hand_geometry.Tags.value = ["invisible"]
 		
@@ -668,7 +668,7 @@ class Homer(ManipulationTechnique):
 				self.intersection_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0,-_distance) * \
 															 avango.gua.make_scale_mat(self.intersection_point_size)
 																  
-				#self.intersection_geometry.Tags.value = [] # set visible
+				self.intersection_geometry.Tags.value = [] # set visible
 
 			else: 
 				## set to default ray length visualization
@@ -677,7 +677,7 @@ class Homer(ManipulationTechnique):
 													avango.gua.make_scale_mat(self.ray_thickness, self.ray_length, self.ray_thickness)
 
 				## update intersection point visualization
-				
+				self.intersection_geometry.Tags.value = ["invisible"] # set visible				
 	
 
 	def hand_mode(self):    
@@ -733,7 +733,6 @@ class Homer(ManipulationTechnique):
 	## extend respective base-class function
 	def stop_dragging(self):
 		self.set_homer_mode(0) # switch to ray submode
-
 		ManipulationTechnique.stop_dragging(self) # call base class function
 
 
